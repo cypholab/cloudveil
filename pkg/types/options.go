@@ -1,7 +1,8 @@
 package types
 
 type Options struct {
-	Cidr         string `help:"IPv4 CIDR address"`
+	Network      string `help:"Network address (192.168.0.0)"`
+	Netmask      int    `help:"Netmask for subnet"`
 	Hostname     string `arg:"required" help:"Hostname to expose real ip address"`
 	ExpectedBody string `arg:"required" help:"Expected content in response body"`
 	Timeout      int    `help:"Timeout in seconds"`

@@ -9,11 +9,6 @@ import (
 
 const ConfigFile = "config.yaml"
 
-type ApiKey struct {
-	Name string `yaml:"name"`
-	Key  string `yaml:"key"`
-}
-
 type Config struct {
 	ApiKeys []ApiKey `yaml:"api_keys"`
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/netip"
 	"os"
@@ -14,7 +15,7 @@ import (
 )
 
 func main() {
-	opts := types.Options{Timeout: 5, RateLimit: 100}
+	opts := types.Options{Timeout: 5, RateLimit: 100, Netmask: 24}
 	arg.MustParse(&opts)
 
 	ips := []netip.Addr{}
@@ -25,17 +26,25 @@ func main() {
 			log.Fatal(err)
 		}
 
-		apiKeys := map[string]string{}
-		for _, k := range config.ApiKeys {
-			apiKeys[k.Name] = k.Key
+		cidrsFromAgents, err := ipcrawler.RunIpCrawler(opts.Hostname, opts.Netmask, config.ApiKeys)
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		ipcrawler.RunIpCrawler(apiKeys)
+		for _, cidr := range cidrsFromAgents {
+			ipsFromCidr, err := iputils.GetIpsFromCidr(cidr)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			ips = append(ips, ipsFromCidr...)
+		}
 	}
 
 	// parse cidr to generate ip addresses
-	if opts.Cidr != "" {
-		ipsFromCidr, err := iputils.GetIpsFromCidr(opts.Cidr)
+	if opts.Network != "" {
+		cidrWithSubnet := fmt.Sprintf("%s/%d", opts.Network, opts.Netmask)
+		ipsFromCidr, err := iputils.GetIpsFromCidr(cidrWithSubnet)
 		if err != nil {
 			log.Fatal(err)
 		}

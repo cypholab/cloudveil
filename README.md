@@ -3,13 +3,18 @@ CloudVeil is an educational tool designed to uncover publicly exposed origin ser
 Usage:
 ```bash
 $ ./cloudveil --help
-Usage: cloudveil --cidr CIDR --hostname HOSTNAME [--ssl]
+Usage: cloudveil [--network NETWORK] [--netmask NETMASK] --hostname HOSTNAME --expectedbody EXPECTEDBODY [--timeout TIMEOUT] [--ratelimit RATELIMIT]
 
 Options:
-  --cidr CIDR            IPv4 CIDR address
+  --network NETWORK      Network address (192.168.0.0)
+  --netmask NETMASK      Netmask for subnet [default: 24]
   --hostname HOSTNAME    Hostname to expose real ip address
-  --ssl                  Send HTTPS request
+  --expectedbody EXPECTEDBODY
+                         Expected content in response body
+  --timeout TIMEOUT      Timeout in seconds [default: 5]
+  --ratelimit RATELIMIT
+                         Max number of requests to send in seconds [default: 100]
   --help, -h             display this help and exit
 
-$ ./cloudveil --cidr 127.0.0.0/24 --hostname localhost
-```
+$ ./cloudveil --network 127.0.0.0 --hostname localhost
+``
