@@ -18,3 +18,12 @@ Options:
 
 $ ./cloudveil --network 127.0.0.0 --hostname localhost
 ```
+
+Search Engine based configuration:
+```yaml
+api_keys:
+  - name: censys
+    auth:
+      username: test
+      password: test
+```
