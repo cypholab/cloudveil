@@ -18,6 +18,7 @@ import (
 const rateLimitKey = "cloudveil"
 
 type Veil struct {
+	checkScheme  string
 	hostname     string
 	ips          []netip.Addr
 	ratelimiter  *ratelimit.GlobalRateLimit
@@ -26,31 +27,27 @@ type Veil struct {
 	expectedBody string
 }
 
-func NewVeil(ips []netip.Addr, body, hostname string, rlimit, timeout int) *Veil {
+func NewVeil(config *Config) *Veil {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	ratelimiter := ratelimit.NewGlobalRateLimit(rlimit)
+	ratelimiter := ratelimit.NewGlobalRateLimit(config.RateLimit)
 	ratelimiter.Add(rateLimitKey)
 
-	progress := progressbar.Default(int64(len(ips)))
+	progress := progressbar.Default(int64(len(config.IpAddresses)))
 
 	return &Veil{
-		hostname:     hostname,
-		ips:          ips,
+		checkScheme:  config.CheckScheme,
+		hostname:     config.Hostname,
+		ips:          config.IpAddresses,
 		ratelimiter:  ratelimiter,
-		expectedBody: body,
-		timeout:      timeout,
+		expectedBody: config.ExpectedBody,
+		timeout:      config.Timeout,
 		progress:     progress,
 	}
 }
 
 func (b *Veil) Run() {
 	results := make(chan Result)
-	var scheme = "http"
-
-	// TODO(implement HTTPS based requests sender)
-
-	log.Printf("Total generated IP addresses: %v", len(b.ips))
 
 	wg := sync.WaitGroup{}
 	go func() {
@@ -64,7 +61,7 @@ func (b *Veil) Run() {
 				b.ratelimiter.Take(rateLimitKey)
 				b.progress.Add(1)
 
-				url := fmt.Sprintf("%s://%s", scheme, ip)
+				url := fmt.Sprintf("%s://%s", b.checkScheme, ip)
 				r, err := b.sendRequest(url)
 				if err != nil {
 					return

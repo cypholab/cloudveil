@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	opts := types.Options{Timeout: 5, RateLimit: 100, Netmask: 24}
+	opts := types.Options{CheckScheme: "https", Timeout: 5, RateLimit: 100, Netmask: 24}
 	arg.MustParse(&opts)
 
 	ips := []netip.Addr{}
@@ -52,6 +52,16 @@ func main() {
 		ips = append(ips, ipsFromCidr...)
 	}
 
-	veil := veil.NewVeil(ips, opts.ExpectedBody, opts.Hostname, opts.RateLimit, opts.Timeout)
+	log.Printf("Total generated IP addresses: %v", len(ips))
+
+	config := &veil.Config{
+		CheckScheme:  opts.CheckScheme,
+		IpAddresses:  ips,
+		ExpectedBody: opts.ExpectedBody,
+		Hostname:     opts.Hostname,
+		RateLimit:    opts.RateLimit,
+		Timeout:      opts.Timeout,
+	}
+	veil := veil.NewVeil(config)
 	veil.Run()
 }
